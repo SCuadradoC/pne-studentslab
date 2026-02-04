@@ -1,12 +1,13 @@
-def fibonacci(n):
+def sumfibN(n):
     a = 0
     b = 0
     c = 1
-    print(c) #this one is needed for f(0)
+    tot = 1
     for i in range (1,n+1):
         a = b
         b = c
         c = a + b
-        print(c)
+        tot += c
+    return tot
 
-fibonacci(4)
+print(sumfibN(5),sumfibN(10))
