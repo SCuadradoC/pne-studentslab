@@ -1,6 +1,7 @@
 def txt_read(path):
     file = open(path,"r")
-    out = file.read().split("\n")
+    #out = file.read().split("\n")
+    out = file.readlines()
     file.close()
     return out
 
