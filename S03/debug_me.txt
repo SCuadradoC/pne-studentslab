@@ -1,0 +1,1 @@
+Whenever c = d , then g(c,d) = 0. Since in line 8 it's defined t1 = g(c,d) and in line 9 we set t3 equal an expression that includes dividing by t1, if c = d we get a division by zero error.
