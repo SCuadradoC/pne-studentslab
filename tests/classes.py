@@ -1,42 +1,46 @@
 class matrix: #2d matrix
-    def __init__(self, dim:tuple, cont):
-        if type(dim) == tuple:
-            self.dim = dim
-        else:
-            raise TypeError("Dim must be a tuple")
+    def __init__(self, cont):
         if type(cont) == list:
-            if len(cont) != dim[0]:
-                check = False
-                mesg = "dim incorrectly defined"
-            
+            check = True
+            size = []
             for row in cont:
-                check = not len(row) == cont
-                if not check and type(row) != list:
+                size.append(len(row))
+                if check and type(row) != list:
+                    check = False
                     break
-                if not check:
+                if check:
+                    check = False
                     for e in row:
-                        check = True
                         if type(e) not in [int,float]:
                             break
                     else:
-                        check = False
-            else:
-                check = True
+                        check = True
+        for e in size:
+            if not e == size[0]:
+                raise ValueError
+        if check:
+            self.cont = cont
+            self.dim = (len(cont),len(cont[0]))
+        else:
+            raise TypeError
         
-            
-
     def __str__(self):
         out = ""
         for row in self.cont:
-            out += "|  "
+            out += "|"
             for e in row:
+                out += " "
                 out += str(e)
-                out += "  "
+                out += " "
             out += "|\n"
         return out
     
+    def size(self):
+        print(self.dim)
+        
     #def matr_add(self,MatA,MatB):
     #    if 
 
-
-            
+#m1 = matrix([[1,3],[4,2]])
+#print(m1)    
+#m1.size()

@@ -1,5 +1,5 @@
-def fileread(path):
-    file = open(path,"r").read()
-    return file
+from classes import *
 
-print(fileread("test.txt"))
+m1 = matrix([[1,3,4],[4,2,5],[0,0,0]])
+
+print(m1)
