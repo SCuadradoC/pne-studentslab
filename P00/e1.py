@@ -1,3 +1,3 @@
-import Seq0
+import Seq1
 
-Seq0.seq_ping()
+Seq1.seq_ping()
