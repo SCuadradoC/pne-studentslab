@@ -1,56 +1,71 @@
-#from termcolor import colored
-from termcolor import cprint
+from pathlib import Path
 
-class Seq():
-    "A class for representing sequences"
-    def __init__(self, seq:str, halt_on_error:bool = False):
-        if type(seq) == str:
-            for l in seq.upper():
-                if not l in "ACTG \n":
-                    if halt_on_error:
-                        raise TypeError
-                    else:
-                        self.seq = "Invalid sequence"
-                        break
+class Seq:
+    def __init__(self, cont:str = ""):
+        self.valid = False
+        if type(cont) != str:
+            raise ValueError
+        if len(cont) == 0:
+            print("Null sequence created")
+            self.cont = "NULL"
+        else:
+            for e in cont:
+                if e.upper() not in "ACTG \n":
+                    print("Invalid sequence")
+                    self.cont = "ERROR"
+                    break
             else:
-                self.seq = seq.upper()
+                self.cont = cont.upper()
+                self.valid = True
                 print("New sequence created")
-        elif halt_on_error:
-            raise TypeError
-        else:
-            self.seq = "Invalid sequence"
-
-    def __str__(self):
-        return self.seq
     
-    def len(self):
-        return len(self.seq)
-
-class Gene(Seq):
-    def __init__(self, name:str, seq:str):
-        super().__init__(seq)
-        self.name = name
-        print("New gene created")
-        
     def __str__(self):
-        return self.name + " - " + self.seq
+        return self.cont
+    
+    def read_fasta(self, file:str):
+        lines = Path(file).read_text().split("\n")
+        l = len(lines)
+        t = 1
+        seq = ""
+        while t < l:
+            seq = seq + lines[t]
+            t += 1
+        self.cont = seq
+        self.valid = True
 
-
-def print_seqs(sequences:list, color:str = "white"):
-    out = ""
-    n = 0
-    for e in sequences:
-        n += 1
-        if type(e) != Seq:
-            out += f"Entry {n} - not a sequence"
+    def len(self):
+        if self.valid:
+            return len(self.cont)
         else:
-            out += f"Sequence {n} : (Lenght: {e.len()}) {e}\n"
-    cprint(out,color)
+            return 0
+    
+    def count(self):
+        bases = {"A":0,"C":0,"T":0,"G":0}
+        if self.valid:
+            for l in self.cont:
+                if l in bases:
+                    bases[l] += 1
+        return bases
 
-def generate_seqs(pat,rep):
-    out = [Seq(pat)]
-    t = 0
-    while rep > t:
-        out.append(Seq(str(out[t]) + pat))
-        t += 1
-    return out
+    def count_base(self):
+        bases = self.count()
+        print(f"A:{bases["A"]}    C:{bases["C"]}    T:{bases["T"]}    G:{bases["G"]}")
+
+    def reverse(self):
+        if self.valid:
+            out = ""
+            for e in self.cont:
+                out = e + out
+        else:
+            out = self.cont
+        return out
+
+    def complement(self):
+        table = {"A":"T","T":"A","C":"G","G":"C"}
+        if self.valid:
+            out = ""
+            for e in self.cont:
+                out += table[e]
+        else:
+            out = self.cont
+        return out

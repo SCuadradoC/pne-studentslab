@@ -30,3 +30,19 @@ def seq_count_base(sequence:str, isfile:bool = True):
         if l in bases:
             bases[l] += 1
     return bases
+
+def seq_reverse(sequence:str):
+    out = ""
+    for e in sequence:
+        out = e + out
+    return out
+
+def seq_complementary(sequence:str):
+    out = ""
+    comp = {"A":"T","C":"G","T":"A","G":"C"}
+    for e in sequence:
+        try:
+            out += comp[e]
+        except KeyError:
+            out += "_"
+    return out
