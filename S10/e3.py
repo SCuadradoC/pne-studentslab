@@ -26,7 +26,8 @@ ls.listen()
 print("The server is configured!")
 
 conn = 0
-while True:
+logs = []
+while conn < 5:
     # -- Waits for a client to connect
     print("Waiting for Clients to connect")
 
@@ -47,7 +48,7 @@ while True:
     else:
         conn += 1
         print(f"CONNECTION {conn}. Client IP and Port: {client_ip_port}")
-        
+        logs.append(f"Client {conn}: {client_ip_port}")
         # -- Read the message from the client
         # -- The received message is in raw bytes
         msg_raw = cs.recv(2048)
@@ -68,3 +69,6 @@ while True:
         # -- Close the data socket
         cs.close()
 
+print(f"\nSClients connected to the server:")
+for e in logs:
+    print(e)
