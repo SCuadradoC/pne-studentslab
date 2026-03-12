@@ -1,15 +1,24 @@
 import socket
 from Seq2 import *
+import os
 #from config import *
 
 IP = "212.128.255.85"
 PORT = 8080
+GENE_DIR = "./sequences/"
 
 seqs = ["ATCGTACAGTCTGACTAGTCGGGGGTG",
         "TAGCGGGTCATGGGATCATATCGATGCTGCATTATT",
         "GCGAGCGATAGCAGTCTAGCTACGTA",
         "AGCGCGCGCCGTACGTGTCGTGCTATCGATCGTACGTCGATCGCGTAGTC",
         "TCTCGTAGCGAGAGCTAGCTAGTCCTTAGCTAGCGTGAGC"]
+
+gene_files = os.listdir(GENE_DIR) #check after changing seq module
+genes = {}
+for e in gene_files:
+    g = e.split(".")[0]
+    genes.update({g:Seq(GENE_DIR + e)})
+    
 
 
 ls = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,7 +78,18 @@ while True:
                 msg_out = err
             else:
                 seq_in = Seq(cmd[1])
-                
+                msg_out = ""
+        
+        elif com == "rev":
+            if len(cmd) != 2:
+                msg_out = err
+            else:
+                seq_in = Seq(cmd[1])
+                msg_out = ""
+        
+        elif com == "gene": #U5, ADA, FRAT1, FXN, RNU6_269P
+            msg_out = "Revise"
+        
         else:
             pass
         
