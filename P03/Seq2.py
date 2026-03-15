@@ -1,4 +1,7 @@
+#Borrowed from Javi
+#Won't be used in the final code
 from pathlib import Path
+
 class Seq:
     def __init__(self, strbases=None):
         if strbases is None:
