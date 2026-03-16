@@ -3,7 +3,7 @@ from Client0 import *
 
 print("-----| Practice 3, Exercise 7 |------")
 
-IP = "192.168.0.128"
+IP = "127.0.0.1"
 PORT = 8080
 
 c1 = Client(IP,PORT)
@@ -31,6 +31,8 @@ print("* Testing REV...")
 print(f"REV {seq}")
 print(c1.talk(f"rev {seq}"))
 
-print("* Testing GENE...")
+print("\n* Testing GENE...\n")
 for e in ["U5", "ADA", "FRAT1", "FXN", "RNU6_269P"]:
-    pass
+    print(f"Gene {e}:")
+    print(c1.talk(f"gene {e}")[0:100]) #added the range to avoid filling the command line and covering the other results
+    print()

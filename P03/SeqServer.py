@@ -3,7 +3,7 @@ from Seq1 import *
 import os
 #from config import *
 
-IP = "192.168.0.128"
+IP = "127.0.0.1"
 PORT = 8080
 GENE_DIR = "../sequences/"
 
