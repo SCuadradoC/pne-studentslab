@@ -1,27 +1,39 @@
 from pathlib import Path
 
 class Seq:
-    def __init__(self, cont:str = ""):
+    def __init__(self, cont:str = "", verbose:bool = True): #added verbose to control if it produces output messages. Doesn't affect the rest of the functions
         self.valid = False
         if type(cont) != str:
             raise ValueError
         if len(cont) == 0:
-            print("Null sequence created")
+            if verbose:
+                print("Null sequence created")
             self.cont = "NULL"
         else:
             for e in cont:
                 if e.upper() not in "ACTG \n":
-                    print("Invalid sequence")
+                    if verbose:
+                        print("Invalid sequence")
                     self.cont = "ERROR"
                     break
             else:
                 self.cont = cont.upper()
                 self.valid = True
-                print("New sequence created")
+                if verbose:
+                    print("New sequence created")
     
     def __str__(self):
         return self.cont
     
+    def __len__(self): #learned that if you define the len() function like this it works writing it normally, like len(seq), instead of seq.len()
+        if self.valid:
+            return len(self.cont)
+        else:
+            return 0
+    
+    def is_valid(self):
+        return self.valid
+
     def read_fasta(self, file:str):
         lines = Path(file).read_text().split("\n")
         l = len(lines)
@@ -47,7 +59,7 @@ class Seq:
                     bases[l] += 1
         return bases
 
-    def count_base(self, do_print:bool):
+    def count_base(self, do_print:bool = True):
         bases = self.count()
         out = f"A:{bases["A"]}    C:{bases["C"]}    T:{bases["T"]}    G:{bases["G"]}"
         if do_print:
@@ -60,6 +72,7 @@ class Seq:
             out = ""
             for e in self.cont:
                 out = e + out
+            out = Seq(out, False)
         else:
             out = self.cont
         return out
@@ -70,6 +83,7 @@ class Seq:
             out = ""
             for e in self.cont:
                 out += table[e]
+            out = Seq(out, False)
         else:
             out = self.cont
         return out

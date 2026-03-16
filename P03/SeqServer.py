@@ -1,11 +1,11 @@
 import socket
-from Seq2 import *
+from Seq1 import *
 import os
 #from config import *
 
-IP = "212.128.255.85"
+IP = "192.168.0.128"
 PORT = 8080
-GENE_DIR = "./sequences/"
+GENE_DIR = "../sequences/"
 
 seqs = ["ATCGTACAGTCTGACTAGTCGGGGGTG",
         "TAGCGGGTCATGGGATCATATCGATGCTGCATTATT",
@@ -16,9 +16,8 @@ seqs = ["ATCGTACAGTCTGACTAGTCGGGGGTG",
 gene_files = os.listdir(GENE_DIR) #check after changing seq module
 genes = {}
 for e in gene_files:
-    g = e.split(".")[0]
-    genes.update({g:Seq(GENE_DIR + e)})
-    
+    genes.update({e.split(".")[0] : GENE_DIR + e}) #this takes only the name of the gene from the list of gene files, and the directory where that file is
+#print(genes)
 
 
 ls = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,7 +42,7 @@ while True:
         #logs.append(f"Client {conn}: {client_ip_port}")
         
         msg_in = cs.recv(2048).decode()
-        print(f"Incoming message: {msg_in})")
+        print(f"Incoming message: '{msg_in}'")
         cmd = msg_in.strip().split(" ")
         com = cmd[0].lower()
         err = "Invalid command arguments"
@@ -58,42 +57,60 @@ while True:
             if len(cmd) != 2:
                 msg_out = err
             else:
-                if cmd[1] in range(0,len(seqs)):
-                    msg_out = seqs[cmd[1]]
-                else:
+                try:
+                    msg_out = seqs[int(cmd[1])]
+                except ValueError:
+                    msg_out = err
+                except IndexError:
                     msg_out = "Requested sequence outside database index"
                     
         elif com == "info":
             if len(cmd) != 2:
                 msg_out = err
-            else: #all this will change when i put my Seq1 in place of the borrowed one
+            else: 
                 seq_in = Seq(cmd[1])
-                if str(seq_in) == "Inv":
+                if not seq_in.is_valid():
                     msg_out = "Invalid sequence"
                 else:
-                    msg_out = seq_in.count() #Rememeber to substitute function
+                    bases = seq_in.count()
+                    l = len(seq_in)
+                    msg_out = f"""Sequence: {str(seq_in)}
+Total length: {l}
+A: {bases["A"]} ({bases["A"] / l * 100}%)
+C: {bases["C"]} ({bases["C"] / l * 100}%)
+T: {bases["T"]} ({bases["T"] / l * 100}%)
+G: {bases["G"]} ({bases["G"] / l * 100}%)"""
                     
         elif com == "comp":
             if len(cmd) != 2:
                 msg_out = err
             else:
                 seq_in = Seq(cmd[1])
-                msg_out = ""
+                msg_out = str(seq_in.complement())
         
         elif com == "rev":
             if len(cmd) != 2:
                 msg_out = err
             else:
                 seq_in = Seq(cmd[1])
-                msg_out = ""
+                msg_out = str(seq_in.reverse())
         
         elif com == "gene": #U5, ADA, FRAT1, FXN, RNU6_269P
-            msg_out = "Revise"
+            if len(cmd) != 2:
+                msg_out = err
+            else:
+                try:
+                    s = Seq()
+                    s.read_fasta(genes[cmd[1]])
+
+                    msg_out = str(s)
+                except KeyError:
+                    msg_out = "Gene not available"
         
         else:
             pass
         
-        cs.send(msg_out)
+        cs.send(str.encode(msg_out + "\n"))
         cs.close()
 
 #if len(cmd) > 2:
