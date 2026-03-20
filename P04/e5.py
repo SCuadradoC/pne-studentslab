@@ -3,7 +3,7 @@ import termcolor
 
 
 # -- Server network parameters
-IP = "127.0.0.1"
+IP = "192.168.0.128"
 PORT = 8080
 PATH = "./P04/"
 
