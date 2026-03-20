@@ -1,2 +1,12 @@
 *.idea
 *__pycache__
+tests/garbage.py
+.gitignore
+sequences/RNU6_269P.txt
+sequences/FXN.txt
+tests/garbage.py
+tests/garbage.py
+sequences/U5.txt
+sequences/ADA.txt
+sequences/FRAT1.txt
+tests/garbage.py
