@@ -34,8 +34,8 @@ class Client:
                 if brk:
                     raise ValueError
         
-        if self.valid:
-            self.sk = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        #if self.valid:
+        #    self.sk = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
             #print("Client created")
         
     
@@ -49,9 +49,12 @@ class Client:
         print("OK")
     
     def talk(self, msg:str):
-        self.sk.connect((self.ip,self.port))
-        self.sk.send(str.encode(str(msg)))
+        sk = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
+        sk.connect((self.ip,self.port))
+        sk.send(str.encode(str(msg)))
         sleep(0.1)
-        out = self.sk.recv(2048).decode()
-        self.sk.close()
+        out = sk.recv(2048).decode()
+        sk.close()
+        
         return out
