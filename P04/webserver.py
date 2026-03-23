@@ -32,14 +32,17 @@ def process_client(s):
 
     # -- Let's start with the body
     link = str(req_line).split(" ")[1]
+    if link == "/":
+        file = PATH + "html/index.html"
+        content = open(file)
+    else:
+        try:
+            file = PATH + "html" + str(req_line).split(" ")[1] + ".html"
+            content = open(file)
 
-    try:
-        file = PATH + "html" + str(req_line).split(" ")[1] + ".html"
-        content = open(file)
-        
-    except FileNotFoundError:
-        file = PATH + "html/error.html"
-        content = open(file)
+        except FileNotFoundError:
+            file = PATH + "html/error.html"
+            content = open(file)
     
     body = content.read()
     content.close()
