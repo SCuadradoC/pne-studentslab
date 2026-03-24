@@ -3,7 +3,7 @@ import termcolor
 
 
 # -- Server network parameters
-IP = "212.128.255.85"
+IP = "127.0.0.1"
 PORT = 8080
 PATH = "./P04/"
 
@@ -33,20 +33,22 @@ def process_client(s):
     # -- Let's start with the body
     link = str(req_line).split(" ")[1]
     if link == "/":
-        file = PATH + "html/index.html"
+        file = PATH + "html/index_copy.html"
         content = open(file)
     else:
         try:
             file = PATH + "html" + str(req_line).split(" ")[1] + ".html"
             content = open(file)
-
+            
         except FileNotFoundError:
             file = PATH + "html/error.html"
             content = open(file)
     
     body = content.read()
     content.close()
-    #print("body = " + body)
+    for b in ["A","C","T","G"]:
+        body = body.replace(f"[[lnk_{b}]]", f"http://{IP}:{PORT}/info/{b}")
+    #print("body = \n" + body)
 
 
     # -- Status line: We respond that everything is ok (200 code)
