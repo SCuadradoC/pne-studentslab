@@ -31,7 +31,7 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         
         try:
             if self.path == "/":
-                page = open(PATH + "form-e1.html")
+                page = open(PATH + "echo-server-e1.html")
                 contents = page.read()
                 page.close()
                 style = "text/html"
@@ -40,12 +40,16 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
                 #page = open(PATH + "echo-server-e1.html")
                 #contents = page.read()
                 #page.close()
-                url_path = urlparse(PATH + "echo-server-e1.html")
-                path = url_path.path # we get it from here
-                arguments = parse_qs(url_path.query)
-                text = arguments
-                print(text)
-                contents = read_html_file(PATH + "echo-server-e1.html").render(context={"todisplay": text}) # provide a dictionary to build the form
+                url_path = urlparse(self.path) #parses the url
+                arguments = parse_qs(url_path.query) #gets the parsed arguments from the url
+                text = arguments.get("msg",[""])[0] #gets the first answer labeled "msg" from the arguments
+                
+                #print(text)
+                #print("OOOOOOO")
+                page = open(PATH + "echo-server-e1.html")
+                contents = page.read().replace("[[echoed]]", text)
+                page.close()
+                
                 style = "text/html"
                 icon = "res.png"
             elif self.path == "logo.png":
