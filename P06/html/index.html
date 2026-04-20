@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+    <html lang="en" dir="ltr">
+      <head>
+        <meta charset="utf-8">
+        <title>Seq2 server</title>
+      </head>
+      <body>
+        <h1>Access to server</h1>
+        <p>__________________________________________</p>
+        <p>Is the server alive?</p>
+        <a href="[[lnk]]/ping">
+          <button>Ping</button>
+        </a>
+        <br>
+        <p>Get a sequence. Select sequence number:</p>
+        <form action="echo" method="get">
+          <select name="get_sequence">
+            [[options]]
+          </select>
+          <input type="submit"/>  
+        </form>
+        
+      </body>
+    </html>
