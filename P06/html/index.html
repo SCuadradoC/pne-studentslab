@@ -7,34 +7,34 @@
       <body>
         <h1>Access to server</h1>
         <p>__________________________________________</p>
-        <p>Is the server alive?</p>
+        Is the server alive?
         <a href="[[lnk]]/ping">
           <button>Ping</button>
         </a>
         <br>
-        <p>Get a sequence. Select sequence number:</p>
+        Get a sequence. Select sequence number: 
         <form action="echo" method="get">
           <select name="get_sequence">
             [[options_seq]]
           </select>
           <input type="submit" value="GET"/>  
         </form>
-
-        <p>Get a gene. Select gene name:</p>
+        <br>
+        Get a gene. Select gene name:
         <form action="echo" method="get">
           <select name="get_gene">
             [[options_gene]]
           </select>
           <input type="submit" value="Gene"/>   
         </form>
-
+        <br>
         <form action="operation" method="get">
           Enter sequence: <input type="text" name="sequence">
           <br>
-          Radio buttons:
-          Info<input type="radio" name="op" value="Info" checked> 
-          Complement<input type="radio" name="op" value="Complement"> 
-          Reverse<input type="radio" name="op" value="Reverse"> 
+          Operation:
+          <input type="radio" name="op" value="Info" checked> Info   
+          <input type="radio" name="op" value="Complement"> Complement   
+          <input type="radio" name="op" value="Reverse"> Reverse   
           <br>
           <input type="submit" value="Operate"/>
         </form>
