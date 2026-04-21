@@ -46,7 +46,11 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
                 options = ""
                 for e in range(0,len(seqs)):
                     options += f'<option value="{e}">{e}</option> '
-                contents = contents.replace("[[options]]",options)
+                contents = contents.replace("[[options_seq]]",options)
+                options = ""
+                for e in genes:
+                    options += f'<option value="{e}">{e}</option> '
+                contents = contents.replace("[[options_gene]]",options)
 
                 style = "text/html"
             elif self.path == "/logo.png":
@@ -57,9 +61,23 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             elif "/echo" in self.path:
                 print(self.path)
                 if "get_sequence" in self.path:
-                    sequence_num = int(self.path.split("=")[1])
-                    contents = f"""<p>Sequence requested:</p> <p>{seqs[sequence_num]}</p> <a href="{LNK}">Main page</a>"""
+                    req_val = int(self.path.split("=")[1])
+                    contents = f"""<p>Sequence requested:</p> <p>{seqs[req_val]}</p> <a href="{LNK}">Main page</a>"""
                     style = "text/html"
+                elif "get_gene" in self.path:
+                    req_val = self.path.split("=")[1]
+                    file = open(genes[req_val])
+                    gene_raw = file.read().split("\n")
+                    file.close()
+                    gene_page = ""
+                    for e in gene_raw:
+                        gene_page += f"{e}<br> "
+                    contents = f"""<p>Gene requested:</p> {gene_page} <a href="{LNK}">Main page</a>"""
+                    file.close()
+                    style = "text/html"
+            elif "operation" in self.path:
+                req_val = self.path.split("=")[1]
+                #add code to generate the html
             else:
                 page = open(PATH + self.path + ".html")
                 contents = page.read()

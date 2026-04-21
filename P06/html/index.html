@@ -15,9 +15,28 @@
         <p>Get a sequence. Select sequence number:</p>
         <form action="echo" method="get">
           <select name="get_sequence">
-            [[options]]
+            [[options_seq]]
           </select>
-          <input type="submit"/>  
+          <input type="submit" value="GET"/>  
+        </form>
+
+        <p>Get a gene. Select gene name:</p>
+        <form action="echo" method="get">
+          <select name="get_gene">
+            [[options_gene]]
+          </select>
+          <input type="submit" value="Gene"/>   
+        </form>
+
+        <form action="operation" method="get">
+          Enter sequence: <input type="text" name="sequence">
+          <br>
+          Radio buttons:
+          Info<input type="radio" name="op" value="Info" checked> 
+          Complement<input type="radio" name="op" value="Complement"> 
+          Reverse<input type="radio" name="op" value="Reverse"> 
+          <br>
+          <input type="submit" value="Operate"/>
         </form>
         
       </body>
