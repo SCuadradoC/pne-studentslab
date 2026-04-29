@@ -16,8 +16,9 @@ def parse_req(path:str):
     page = ""
     param = {}
     while path[0] != "?":
-        page += path.pop(0)
-    path.pop(0)
+        page += path[0]
+        path = path[1:]
+    path = path[1:]
     for e in path.split("&"):
         i = e.split("=")
         param.update({i[0]:i[1]})

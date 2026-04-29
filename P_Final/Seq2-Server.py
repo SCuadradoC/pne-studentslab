@@ -1,4 +1,6 @@
 import http.server
+import http.client
+import json
 #import socket
 import socketserver
 from Seq1 import *
@@ -6,27 +8,19 @@ import os
 #from config import *
 import termcolor
 from html_helper import *
+import per_page_code as ppc
 
 
 
-# Define the Server's port
+# Define the code parameters
 IP = "127.0.0.1" #socket.gethostbyname(socket.gethostname())
 PORT = 8080
-PATH = "./P06/html"
+PATH = "./P_Final/html"
 GENE_DIR = "./sequences/"
 LNK = f"http://{IP}:{PORT}"
+SERVER = "http://rest.ensembl.org"
 
-seqs = ["ATCGTACAGTCTGACTAGTCGGGGGTG",
-        "TAGCGGGTCATGGGATCATATCGATGCTGCATTATT",
-        "GCGAGCGATAGCAGTCTAGCTACGTA",
-        "AGCGCGCGCCGTACGTGTCGTGCTATCGATCGTACGTCGATCGCGTAGTC",
-        "TCTCGTAGCGAGAGCTAGCTAGTCCTTAGCTAGCGTGAGC"]
-
-gene_files = os.listdir(GENE_DIR) #check after changing seq module
-genes = {}
-for e in gene_files:
-    genes.update({e.split(".")[0] : GENE_DIR + e}) #this takes only the name of the gene from the list of gene files, and the directory where that file is
-#print(genes)
+conn = http.client.HTTPConnection(SERVER)
 
 class TestHandler(http.server.BaseHTTPRequestHandler):
     
@@ -44,78 +38,24 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
                 page = open(PATH + "/index.html")
                 contents = page.read()
                 page.close()
-                options = ""
-                for e in range(0,len(seqs)):
-                    options += f'<option value="{e}">{e}</option> '
-                contents = contents.replace("[[options_seq]]",options)
-                options = ""
-                for e in genes:
-                    options += f'<option value="{e}">{e}</option> '
-                contents = contents.replace("[[options_gene]]",options)
-
                 style = "text/html"
 #            elif self.path == "/favicon.ico":
 #                page = open(PATH + "/logo.png", "rb")
 #                contents = page.read()
 #                style = "image/png"
 
-            elif "/echo" in self.path:
+            else:# "/echo" in self.path
                 print(self.path)
-                if "get_sequence" in self.path:
-                    req_val = int(self.path.split("=")[1])
-                    file = open(PATH + "/get.html")
-                    page_raw = file.read()
-                    file.close()
-                    contents = insert_content(page_raw,["n","seq_cont"],[str(req_val),seqs[req_val]])
-                    style = "text/html"
-                elif "get_gene" in self.path:
-                    req_val = self.path.split("=")[1]
-                    file = open(genes[req_val])
-                    gene_raw = file.read().split("\n")
-                    file.close()
-                    file = open(PATH + "/gene.html")
-                    page_raw = file.read()
-                    file.close()
-                    gene_proc = ""
-                    for e in gene_raw:
-                        gene_proc += f"{e}<br> "
-                    contents = insert_content(page_raw,["gene_name","gene_cont"],[req_val,gene_proc])
-                    file.close()
-                    style = "text/html"
-            elif "operation" in self.path:
-                req_val = self.path.split("?")[1].split("&")
-                seq_in = Seq(req_val[0].split("=")[1],False)
-                operation = req_val[1].split("=")[1]
-
-                if operation == "Info":
-                    bases = seq_in.count()
-                    l = len(seq_in)
-                    if l != 0:
-                        result = f"""<p>Total length: {l}</p>
-<p>A: {bases["A"]} ({bases["A"] / l * 100}%)</p>
-<p>C: {bases["C"]} ({bases["C"] / l * 100}%)</p>
-<p>T: {bases["T"]} ({bases["T"] / l * 100}%)</p>
-<p>G: {bases["G"]} ({bases["G"] / l * 100}%)</p>"""
-                    else:
-                        seq_in = req_val[0].split("=")[1]
-                        result = "Erroneous sequence"
-                    
-                elif operation == "Complement":
-                    result = str(seq_in.complement())
-                elif operation == "Reverse":
-                    result = str(seq_in.reverse())
-                file = open(PATH + "/operation.html")
-                page_raw = file.read()
-                file.close()
+                endpoint, params = parse_req(self.path)
+                pos_endpoints = ["/listSpecies","/karyotype","/chromosomeLength"]
+                if endpoint == pos_endpoints[0]:
+                    ppc.listSpecies(params)
+            
+            page = open(PATH + self.path + ".html")
+            contents = page.read()
+            page.close()
                 
-                contents = insert_content(page_raw,["seq_in","operation","result"],[str(seq_in),operation,result])
-                style = "text/html"
-            else:
-                page = open(PATH + self.path + ".html")
-                contents = page.read()
-                page.close()
-                
-                style = "text/html"
+            #style = "text/html"
             response_code = 200
         except FileNotFoundError:
             page = open(PATH + "/error.html")

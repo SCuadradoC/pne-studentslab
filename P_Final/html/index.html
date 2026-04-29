@@ -8,21 +8,30 @@
         <h2>Basic services</h2>
         <h3> List of species in the database </h3>
         <form action="echo" method="get">
-          Limit entries: <input type="number" id="spec_lim" min="1"><br>
-          <input type="submit" id="list_species" value="Request"/>  
+          <input type="hidden" name="list_species">
+          Limit entries: <input type="number" name="spec_lim" id="" min="1"><br>
+          <!-- 
+          <select name="options">
+            <option value="count"> Count </option>
+            <option value="perc"> Percentage </option>
+          </select>
+          -->
+          <input type="submit" value="Request"/>  
         </form>
         <br>
         <h3> Information about the karyotype </h3>
         <form action="echo" method="get">
+          <input type="hidden" name="karyotype">
           Enter species:  <input type="text" id="karyotype_spec"/><br>
-          <input type="submit" id="karyotype" value="Request"/>
+          <input type="submit" value="Request"/>
         </form>
         <br>
         <h3> Chromosome length </h3>
         <form action="echo" method="get">
+          <input type="hidden" name="chromosome_len">
           Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" id="len_spec"/><br>
           Select chromosome: &nbsp <input type="text" id="len_chrom"/><br>
-          <input type="submit" id="chromosome_len" value="Request"/>   
+          <input type="submit" value="Request"/>   
         </form>
         
 
