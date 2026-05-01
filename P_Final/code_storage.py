@@ -85,3 +85,27 @@ elif "get_gene" in self.path:
                 file = open(PATH + "/operation.html")
                 page_raw = file.read()
                 file.close()
+    
+
+
+
+
+
+
+
+else:  ### "/echo" in self.path
+    print(self.path)
+    
+    
+    if dir_path == pos_endpoints[0]:
+        ppc.listSpecies(params)
+    elif dir_path == pos_endpoints[1]:
+        pass
+    elif dir_path == pos_endpoints[2]:
+        pass
+    else:
+        pass
+    
+page = open(PATH + self.path + ".html")
+contents = page.read()
+page.close()

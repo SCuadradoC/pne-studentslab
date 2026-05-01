@@ -18,7 +18,8 @@ PORT = 8080
 PATH = "./P_Final/html"
 GENE_DIR = "./sequences/"
 LNK = f"http://{IP}:{PORT}"
-SERVER = "http://rest.ensembl.org"
+SERVER = "rest.ensembl.org"
+PAGES = ["/listSpecies","/karyotype","/chromosomeLength"]
 
 conn = http.client.HTTPConnection(SERVER)
 
@@ -32,28 +33,20 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 
         # Print the command received (should be GET)
         print("  Command: " + self.command)
-        
+        dir_path, params = parse_req(self.path)
         try:
-            if self.path in ["/","/index.html"]:
+            if dir_path == "/" or dir_path == "/index.html":
                 page = open(PATH + "/index.html")
                 contents = page.read()
                 page.close()
                 style = "text/html"
-#            elif self.path == "/favicon.ico":
+#            elif dir_path == "/favicon.ico":
 #                page = open(PATH + "/logo.png", "rb")
 #                contents = page.read()
 #                style = "image/png"
-
-            else:# "/echo" in self.path
-                print(self.path)
-                endpoint, params = parse_req(self.path)
-                pos_endpoints = ["/listSpecies","/karyotype","/chromosomeLength"]
-                if endpoint == pos_endpoints[0]:
-                    ppc.listSpecies(params)
-            
-            page = open(PATH + self.path + ".html")
-            contents = page.read()
-            page.close()
+            elif dir_path == PAGES[0]:
+                contents = ppc.listSpecies(params)
+                style = "text/html"
                 
             #style = "text/html"
             response_code = 200

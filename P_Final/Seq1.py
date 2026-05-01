@@ -59,14 +59,6 @@ class Seq:
                     bases[l] += 1
         return bases
 
-    def count_base(self, do_print:bool = True):
-        bases = self.count()
-        out = f"A:{bases["A"]}    C:{bases["C"]}    T:{bases["T"]}    G:{bases["G"]}"
-        if do_print:
-            print(out)
-        else:
-            return out
-
     def reverse(self):
         if self.valid:
             out = ""

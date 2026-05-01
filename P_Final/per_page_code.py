@@ -13,20 +13,33 @@ PORT = 8080
 PATH = "./P_Final/html"
 GENE_DIR = "./sequences/"
 LNK = f"http://{IP}:{PORT}"
-SERVER = "http://rest.ensembl.org"
+SERVER = "rest.ensembl.org"
+
 
 conn = http.client.HTTPConnection(SERVER)
 
-def listSpecies(params):
+def listSpecies(params:dict):
+    params.update({"name_selection":"common_name"}) #Until i add it as an input
     conn.request("GET", "/info/species?content-type=application/json")
     ens_data_raw = conn.getresponse().read().decode("utf-8")
     #print(ens_data_raw)
     ens_data = json.loads(ens_data_raw)["species"]
     if params["spec_lim"] != "":
-        n = params["spec_lim"]
+        n = int(params["spec_lim"])
     else:
-        n = len(params)
+        n = -1 #starting at -1 n will never be 0
     
     names = ""
     for e in ens_data:
-        names += f"<p> {e} </p>"
+        names += f"<p>·{e[params["name_selection"]]}</p>"
+        n += -1
+        if n == 0:
+            break
+    
+    page = open(PATH + "/page_template.html")
+    contents = page.read()
+    page.close()
+
+    contents = insert_content(contents,["title","content"],["List of species available in the database:",names])
+    print(contents)
+    return contents
