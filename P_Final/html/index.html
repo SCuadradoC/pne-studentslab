@@ -9,7 +9,7 @@
         <h3> List of species in the database </h3>
         <form action="listSpecies" method="get">
           <!--input type="hidden" name="list_species"-->
-          Limit entries: <input type="number" name="spec_lim" id="" min="1"><br>
+          Limit entries: <input type="number" name="spec_lim" min="1"><br>
           <!-- 
           <select name="options">
             <option value="count"> Count </option>
@@ -20,9 +20,9 @@
         </form>
         <br>
         <h3> Information about the karyotype </h3>
-        <form action="echo" method="get">
-          <input type="hidden" name="karyotype">
-          Enter species:  <input type="text" id="karyotype_spec"/><br>
+        <form action="karyotype" method="get">
+          <!--input type="hidden" name="karyotype"-->
+          Enter species:  <input type="text" name="species"/><br>
           <input type="submit" value="Request"/>
         </form>
         <br>

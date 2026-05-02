@@ -36,10 +36,29 @@ def listSpecies(params:dict):
         if n == 0:
             break
     
-    page = open(PATH + "/page_template.html")
-    contents = page.read()
-    page.close()
-
+    contents = load_txt(PATH + "/page_template.html")
     contents = insert_content(contents,["title","content"],["List of species available in the database:",names])
-    print(contents)
+    #print(contents)
+    return contents
+
+
+def karyotype(params:dict):
+    conn.request("GET", f"/info/assembly/{params["species"]}?content-type=application/json")
+    ens_data_raw = conn.getresponse().read().decode("utf-8")
+    #print(ens_data_raw)
+    ens_data = json.loads(ens_data_raw)
+    
+    for e in ens_data:
+        check = e
+        break       #this gets the index of the first entry in the dictionary, to allow me to discard any invalid species
+    
+    contents = load_txt(PATH + "/page_template.html")
+    if check != "error":
+        names = ""
+        for e in ens_data["karyotype"]:
+            names += f"· {e}<br>"
+        contents = insert_content(contents,["title","content"],[f"Chromosomes in the {params["species"]} karyotype:",names])
+        #print(contents)
+    else:
+        contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database<br><br><br>"])
     return contents

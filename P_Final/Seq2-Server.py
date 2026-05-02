@@ -3,10 +3,12 @@ import http.client
 import json
 #import socket
 import socketserver
-from Seq1 import *
 import os
 #from config import *
 import termcolor
+
+# my custom libraries:
+from Seq1 import *
 from html_helper import *
 import per_page_code as ppc
 
@@ -36,9 +38,7 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
         dir_path, params = parse_req(self.path)
         try:
             if dir_path == "/" or dir_path == "/index.html":
-                page = open(PATH + "/index.html")
-                contents = page.read()
-                page.close()
+                contents = load_txt(PATH + "/index.html")
                 style = "text/html"
 #            elif dir_path == "/favicon.ico":
 #                page = open(PATH + "/logo.png", "rb")
@@ -46,6 +46,9 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 #                style = "image/png"
             elif dir_path == PAGES[0]:
                 contents = ppc.listSpecies(params)
+                style = "text/html"
+            elif dir_path == PAGES[1]:
+                contents = ppc.karyotype(params)
                 style = "text/html"
                 
             #style = "text/html"

@@ -24,5 +24,14 @@ def parse_req(path:str):
         path = path[1:]
         for e in path.split("&"):
             i = e.split("=")
-            param.update({i[0]:i[1]})
+            try:
+                param.update({i[0]:i[1]})
+            except IndexError:
+                pass
     return page,param
+
+def load_txt(path:str):
+    file = open(path)
+    contents = file.read()
+    file.close()
+    return contents
