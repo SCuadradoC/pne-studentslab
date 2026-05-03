@@ -62,3 +62,27 @@ def karyotype(params:dict):
     else:
         contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database<br><br><br>"])
     return contents
+
+def chromosomeLenght(params:dict):
+    conn.request("GET", f"/info/assembly/{params["species"]}?content-type=application/json")
+    ens_data_raw = conn.getresponse().read().decode("utf-8")
+    #print(ens_data_raw)
+    ens_data = json.loads(ens_data_raw)
+    
+    for e in ens_data:
+        check = e
+        break       #this gets the index of the first entry in the dictionary, to allow me to discard any invalid species
+
+    contents = load_txt(PATH + "/page_template.html")
+    if check != "error":
+        for e in ens_data["top_level_region"]:
+            if e["name"] == params["chromosome"]:
+                print(e)
+                chrom_lenght = e["length"]
+                contents = insert_content(contents,["title","content"],["Chromosome lenght info",f"Lenght of chromosome {params['chromosome']} of the {params["species"]} species is {str(chrom_lenght)} bases"])
+                break
+        else:
+            contents = insert_content(contents,["title","content"],["Chromosome lenght info",f"The chromosome {params['chromosome']} doesn't exist in the {params["species"]} species"])
+    else:
+        contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database<br><br><br>"])
+    return contents

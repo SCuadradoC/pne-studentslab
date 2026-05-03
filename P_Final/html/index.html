@@ -27,10 +27,10 @@
         </form>
         <br>
         <h3> Chromosome length </h3>
-        <form action="echo" method="get">
-          <input type="hidden" name="chromosome_len">
-          Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" id="len_spec"/><br>
-          Select chromosome: &nbsp <input type="text" id="len_chrom"/><br>
+        <form action="chromosomeLength" method="get">
+          <!--input type="hidden" name="chromosome_len"-->
+          Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species"/><br>
+          Select chromosome: &nbsp <input type="text" name="chromosome"/><br>
           <input type="submit" value="Request"/>   
         </form>
         

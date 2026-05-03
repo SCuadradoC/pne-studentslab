@@ -50,6 +50,11 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             elif dir_path == PAGES[1]:
                 contents = ppc.karyotype(params)
                 style = "text/html"
+            elif dir_path == PAGES[2]:
+                contents = ppc.chromosomeLenght(params)
+                style = "text/html"
+            else:
+                raise FileNotFoundError
                 
             #style = "text/html"
             response_code = 200
