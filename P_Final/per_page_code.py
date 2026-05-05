@@ -39,7 +39,8 @@ def listSpecies(params:dict):
     contents = load_txt(PATH + "/page_template.html")
     contents = insert_content(contents,["title","content"],["List of species available in the database:",names])
     #print(contents)
-    return contents
+    style = "text/html"
+    return contents, style
 
 
 def karyotype(params:dict):
@@ -60,8 +61,9 @@ def karyotype(params:dict):
         contents = insert_content(contents,["title","content"],[f"Chromosomes in the {params["species"]} karyotype:",names])
         #print(contents)
     else:
-        contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database<br><br><br>"])
-    return contents
+        contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
+    style = "text/html"
+    return contents, style
 
 def chromosomeLenght(params:dict):
     conn.request("GET", f"/info/assembly/{params["species"]}?content-type=application/json")
@@ -84,5 +86,27 @@ def chromosomeLenght(params:dict):
         else:
             contents = insert_content(contents,["title","content"],["Chromosome lenght info",f"The chromosome {params['chromosome']} doesn't exist in the {params["species"]} species"])
     else:
-        contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database<br><br><br>"])
-    return contents
+        contents = insert_content(contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
+    style = "text/html"
+    return contents, style
+
+
+def geneLookup(params:dict):
+    conn.request("GET", f"/xrefs/symbol/homo_sapiens/{params["gene"]}?content-type=application/json")
+    ens_data_raw = conn.getresponse().read().decode("utf-8")
+    #print(ens_data_raw)
+    ens_data = json.loads(ens_data_raw)
+
+    contents = load_txt(PATH + "/page_template.html")
+    #if type(ens_data) == list:
+    #    ens_data = ens_data[0]
+    if len(ens_data) == 0:
+        contents = insert_content(contents,["title","content"],["Search result",f"""The gene "{params["gene"]}" couldn't be found on the homo_sapiens genome """])
+    #elif ens_data.get("error") != None:
+    #    contents = insert_content(contents,["title","content"],["Search result",f"""The species {...} couldn't be found on the ensembl database """])
+    else:
+        ens_data = ens_data[0]
+        #gene_id = ens_data["id"]
+        contents = insert_content(contents,["title","content"],["Search result",f"The gene {params["gene"]} of homo_sapiens has the identifier {ens_data["id"]} "])
+    style = "text/html"
+    return contents, style

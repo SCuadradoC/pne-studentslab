@@ -21,7 +21,7 @@ PATH = "./P_Final/html"
 GENE_DIR = "./sequences/"
 LNK = f"http://{IP}:{PORT}"
 SERVER = "rest.ensembl.org"
-PAGES = ["/listSpecies","/karyotype","/chromosomeLength"]
+PAGES = ["/listSpecies","/karyotype","/chromosomeLength", "/geneLookup", "/geneSeq", "/geneInfo", "/geneCalc", "/geneList"]
 
 conn = http.client.HTTPConnection(SERVER)
 
@@ -45,14 +45,14 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 #                contents = page.read()
 #                style = "image/png"
             elif dir_path == PAGES[0]:
-                contents = ppc.listSpecies(params)
-                style = "text/html"
+                contents, style  = ppc.listSpecies(params)
             elif dir_path == PAGES[1]:
-                contents = ppc.karyotype(params)
-                style = "text/html"
+                contents, style = ppc.karyotype(params)
             elif dir_path == PAGES[2]:
-                contents = ppc.chromosomeLenght(params)
-                style = "text/html"
+                contents, style = ppc.chromosomeLenght(params)
+            elif dir_path == PAGES[3]:
+                contents, style = ppc.geneLookup(params)
+            
             else:
                 raise FileNotFoundError
                 
