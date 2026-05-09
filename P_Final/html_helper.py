@@ -35,3 +35,14 @@ def load_txt(path:str):
     contents = file.read()
     file.close()
     return contents
+
+def create_content(text:list,data:list):
+    if len(text) != len(data)+1:
+        raise IndexError
+    out = ""
+    for n in range[0:len(data)]:
+        out += text[n]
+        out += str(data)
+    out += text[-1]
+    
+    return out

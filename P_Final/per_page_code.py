@@ -11,7 +11,7 @@ from html_helper import *
 IP = "127.0.0.1" #socket.gethostbyname(socket.gethostname())
 PORT = 8080
 PATH = "./P_Final/html"
-GENE_DIR = "./sequences/"
+#GENE_DIR = "./sequences/"
 LNK = f"http://{IP}:{PORT}"
 SERVER = "rest.ensembl.org"
 
@@ -91,7 +91,7 @@ def chromosomeLenght(params:dict):
     return contents, style
 
 
-def geneLookup(params:dict):
+def geneLookup(params:dict, return_raw:bool = False):
     conn.request("GET", f"/xrefs/symbol/homo_sapiens/{params["gene"]}?content-type=application/json")
     ens_data_raw = conn.getresponse().read().decode("utf-8")
     #print(ens_data_raw)
@@ -101,12 +101,48 @@ def geneLookup(params:dict):
     #if type(ens_data) == list:
     #    ens_data = ens_data[0]
     if len(ens_data) == 0:
-        contents = insert_content(contents,["title","content"],["Search result",f"""The gene "{params["gene"]}" couldn't be found on the homo_sapiens genome """])
+        if return_raw:
+            contents = None
+        else:
+            contents = insert_content(contents,["title","content"],["Search result",f"""The gene "{params["gene"]}" couldn't be found on the homo_sapiens genome """])
     #elif ens_data.get("error") != None:
     #    contents = insert_content(contents,["title","content"],["Search result",f"""The species {...} couldn't be found on the ensembl database """])
     else:
         ens_data = ens_data[0]
-        #gene_id = ens_data["id"]
-        contents = insert_content(contents,["title","content"],["Search result",f"The gene {params["gene"]} of homo_sapiens has the identifier {ens_data["id"]} "])
+        if return_raw:
+            contents = ens_data["id"]
+        else:
+            #gene_id = ens_data["id"]
+            contents = insert_content(contents,["title","content"],["Search result",f"The gene {params["gene"]} of homo_sapiens has the identifier {ens_data["id"]} "])
     style = "text/html"
     return contents, style
+
+def geneSeq(params:dict):
+    check == False               #Checks if the info entered is an ensembl stable identifier
+    for n in range[0:4]:
+        if params["gene"][n] != "ENSG"[n]:
+            check = False
+            break
+    if not check:
+        try:
+            int(params[4:15])
+        except ValueError:
+            check = False
+    
+    if check:
+        gene_id = geneLookup(params)[0]
+    else:
+        gene_id = params["gene"]
+
+
+    conn.request("GET", f"/sequence/id/{gene_id}?content-type=text/plain")
+    ens_data_raw = conn.getresponse().read().decode("utf-8")
+    #print(ens_data_raw)
+    #ens_data = json.loads(ens_data_raw)
+    
+
+    contents = load_txt(PATH + "/page_template.html")
+    if len(ens_data_raw) != 0:
+        contents = insert_content(contents,["title","content"],[f"Gene requested ({gene_id})",f""])
+    else:
+        contents = insert_content(contents,["title","content"],[f"Gene requested ({params["gene"]})", f'The gene "{params["gene"]}"'])

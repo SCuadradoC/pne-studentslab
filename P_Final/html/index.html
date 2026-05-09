@@ -35,8 +35,16 @@
         </form>
         <br>
         <h2>Medium services</h2>
-        <h3> Gene id lookup </h3>
+        
         <form action="geneLookup" method="get">
+          <!--input type="hidden" name="chromosome_len"-->
+          <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
+          Select gene: &nbsp <input type="text" name="gene"/><br>
+          <input type="submit" value="Request"/>   
+        </form>
+        <br>
+        <h3> Gene sequences lookup </h3>
+        <form action="geneSeq" method="get">
           <!--input type="hidden" name="chromosome_len"-->
           <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
           Select gene: &nbsp <input type="text" name="gene"/><br>
