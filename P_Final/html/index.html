@@ -10,12 +10,11 @@
         <form action="listSpecies" method="get">
           <!--input type="hidden" name="list_species"-->
           Limit entries: <input type="number" name="spec_lim" min="1"><br>
-          <!-- 
-          <select name="options">
-            <option value="count"> Count </option>
-            <option value="perc"> Percentage </option>
-          </select>
-          -->
+          Select name type: <select name="name_selection">
+            <option value="common_name"> Common name </option>
+            <option value="display_name"> Display name </option>
+            <option value="name"> Scientific name </option>
+          </select><br>
           <input type="submit" value="Request"/>  
         </form>
         <br>
@@ -35,7 +34,7 @@
         </form>
         <br>
         <h2>Medium services</h2>
-        
+        <h3> Gene Lookup </h3>
         <form action="geneLookup" method="get">
           <!--input type="hidden" name="chromosome_len"-->
           <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
@@ -43,13 +42,27 @@
           <input type="submit" value="Request"/>   
         </form>
         <br>
-        <h3> Gene sequences lookup </h3>
+        <h3> Gene sequence </h3>
         <form action="geneSeq" method="get">
           <!--input type="hidden" name="chromosome_len"-->
           <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
           Select gene: &nbsp <input type="text" name="gene"/><br>
           <input type="submit" value="Request"/>   
         </form>
-
+        <h3> Gene Information </h3>
+        <form action="geneInfo" method="get">
+          <!--input type="hidden" name="chromosome_len"-->
+          <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
+          Select gene: &nbsp <input type="text" name="gene"/><br>
+          <input type="submit" value="Request"/>   
+        </form>
+        <h3> Gene Information </h3>
+        <form action="geneInfo" method="get">
+          <!--input type="hidden" name="chromosome_len"-->
+          <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
+          Select gene: &nbsp <input type="text" name="gene"/><br>
+          <input type="submit" value="Request"/>   
+        </form>
+        
       </body>
     </html>

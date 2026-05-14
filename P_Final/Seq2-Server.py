@@ -10,7 +10,7 @@ import termcolor
 # my custom libraries:
 from Seq1 import *
 from html_helper import *
-import per_page_code as ppc
+import per_page_class as ppc
 
 
 
@@ -22,6 +22,8 @@ GENE_DIR = "./sequences/"
 LNK = f"http://{IP}:{PORT}"
 SERVER = "rest.ensembl.org"
 PAGES = ["/listSpecies","/karyotype","/chromosomeLength", "/geneLookup", "/geneSeq", "/geneInfo", "/geneCalc", "/geneList"]
+
+
 
 conn = http.client.HTTPConnection(SERVER)
 
@@ -45,14 +47,23 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 #                contents = page.read()
 #                style = "image/png"
             elif dir_path == PAGES[0]:
-                contents, style  = ppc.listSpecies(params)
+                req = ppc.listSpecies(params,PATH)
+                contents, style  = req.html()
             elif dir_path == PAGES[1]:
-                contents, style = ppc.karyotype(params)
+                req = ppc.karyotype(params,PATH)
+                contents, style  = req.html()
             elif dir_path == PAGES[2]:
-                contents, style = ppc.chromosomeLenght(params)
+                req = ppc.chromosomeLenght(params,PATH)
+                contents, style  = req.html()
             elif dir_path == PAGES[3]:
-                contents, style = ppc.geneLookup(params)
-            
+                req = ppc.geneLookup(params,PATH)
+                contents, style  = req.html()
+            elif dir_path == PAGES[4]:
+                req = ppc.geneSeq(params,PATH)
+                contents, style  = req.html()
+            elif dir_path == PAGES[5]:
+                req = ppc.geneInfo(params,PATH)
+                contents, style  = req.html()
             else:
                 raise FileNotFoundError
                 
