@@ -29,7 +29,7 @@ class response:
         self.contents = ""
         self.style = ""
     
-    def __str__(self):
+    def __str__(self):  #These I used for debugging
         return f"Raw response, stored parameters:{str(self.params)}"
     
     def check_data(self):
@@ -45,7 +45,7 @@ class response:
         
         if type(ens_data) == list:
             ens_data = ens_data[0]
-        elif type(ens_data) == dict: #This allows me to detect when an attempt to access any info from the ensembl database returns an error or empty information, either by checking if the first value is "error" or by checking if it's a tuple
+        elif type(ens_data) == dict: #This allows me to detect when an attempt to access any info from the ensembl database returns an error or an empty json
             if len(ens_data) == 0:
                 ens_data = ("error", "return_empty")
             elif len(ens_data) == 1:
@@ -87,6 +87,7 @@ class response:
             return self.id
     
     def html(self, template:str = "/page_template.html"):
+        self.style = "text/html"
         file = open(self.PATH + template)
         self.contents = file.read()
         file.close()
@@ -97,7 +98,11 @@ class response:
         pass
 
     def json(self):
-        pass
+        self.style = "application/json"
+        try:    #This tries to access the variable self.ens_data, and if it doesn't exist (.load() hasn't been used) it calls it itself (to avoid errors)
+            self.ens_data
+        except AttributeError:
+            self.load()
     
 
 
@@ -125,7 +130,6 @@ class listSpecies(response):
                 break
         names += "</div>"
         self.contents = insert_content(self.contents,["title","content"],["List of species available in the database:",names])
-        self.style = "text/html"
         return self.contents, self.style
 
 
@@ -150,8 +154,6 @@ class karyotype(response):
             #print(contents)
         else:
             self.contents = insert_content(self.contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
-        
-        self.style = "text/html"
         return self.contents, self.style
 
 
@@ -178,7 +180,6 @@ class chromosomeLenght(response):
                 self.contents = insert_content(self.contents,["title","content"],["Chromosome lenght info",f"The chromosome {self.params['chromosome']} doesn't exist in the {self.params["species"]} species"])
         else:
             self.contents = insert_content(self.contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
-        self.style = "text/html"
         return self.contents, self.style
 
 
@@ -209,7 +210,7 @@ class geneLookup(response):
         else:
             #gene_id = ens_data["id"]
             self.contents = insert_content(self.contents,["title","content"],["Search result",f"The gene {self.params["gene"]} of homo_sapiens has the identifier {self.id} "])
-        self.style = "text/html"
+        
         return self.contents, self.style
 
 
@@ -235,7 +236,7 @@ class geneSeq(response):
             body_text += e + "<wbr>"
         body_text += "</div>"
         self.contents = insert_content(self.contents,["title","content"],["Gene requested:",body_text])
-        self.style = "text/html"
+        
         return self.contents, self.style    
 
 
@@ -280,5 +281,41 @@ class geneInfo(response):
 <p>Genome reference version: {self.table["reference_version"]}</p>
 """
         self.contents = insert_content(self.contents,["title","content"],["Info from the gene requested",body_text])
-        self.style = "text/html"
+        
+        return self.contents, self.style
+
+
+class geneCalc(response):
+    def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
+        super().__init__(params, path, server, IP, PORT)
+        
+        if self.is_id():
+            self.id = params["gene"]
+        else:
+            self.get_id(params["gene"])
+        self.source = f"/sequence/id/{self.id}?content-type=application/json"
+    
+    def __str__(self):
+        return f"Response for geneCalc, stored parameters:{str(self.params)}"
+    
+    def count(self):
+        bases = {"A":0,"C":0,"T":0,"G":0}
+        seq = self.ens_data["seq"]
+        try:
+            for l in seq:
+                bases[l] += 1
+        except KeyError:
+            bases = {"A":0,"C":0,"T":0,"G":0}
+        return bases
+    
+    def html(self, template = "/page_template.html"):
+        super().html(template)
+        n = self.count()
+        body_text = f"""·Lenght: {len(self.ens_data["seq"])}
+·A: {n["A"]}
+·C: {n["C"]}
+·T: {n["T"]}
+·G: {n["G"]}"""
+        self.contents = insert_content(self.contents,["title","content"],["Calculation result:",body_text])
+        
         return self.contents, self.style
