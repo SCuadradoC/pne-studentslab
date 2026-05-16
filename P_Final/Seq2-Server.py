@@ -48,26 +48,27 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 #                style = "image/png"
             elif dir_path == PAGES[0]:
                 req = ppc.listSpecies(params,PATH)
-                contents, style  = req.html()
             elif dir_path == PAGES[1]:
                 req = ppc.karyotype(params,PATH)
-                contents, style  = req.html()
             elif dir_path == PAGES[2]:
                 req = ppc.chromosomeLenght(params,PATH)
-                contents, style  = req.html()
             elif dir_path == PAGES[3]:
                 req = ppc.geneLookup(params,PATH)
-                contents, style  = req.html()
             elif dir_path == PAGES[4]:
                 req = ppc.geneSeq(params,PATH)
-                contents, style  = req.html()
             elif dir_path == PAGES[5]:
                 req = ppc.geneInfo(params,PATH)
-                contents, style  = req.html()
             else:
                 raise FileNotFoundError
-                
-            #style = "text/html"
+            
+            try:
+                if params["json"] == "1":
+                    contents, style  = req.json()
+                else:
+                    contents, style  = req.html()
+            except KeyError:
+                contents, style  = req.html()
+
             response_code = 200
         except FileNotFoundError:
             page = open(PATH + "/error.html")

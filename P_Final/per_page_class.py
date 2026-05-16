@@ -45,7 +45,7 @@ class response:
         
         if type(ens_data) == list:
             ens_data = ens_data[0]
-        elif type(ens_data) == dict: #This allows me to detect when an attempt to access any info from the ensembl database returns an error or an empty json
+        elif type(ens_data) == dict: #This allows me to detect when an attempt to access any info from the ensembl database returns an error or an empty json, either by checking if the first value is "error" or by checking if it's a tuple
             if len(ens_data) == 0:
                 ens_data = ("error", "return_empty")
             elif len(ens_data) == 1:
@@ -103,6 +103,7 @@ class response:
             self.ens_data
         except AttributeError:
             self.load()
+        pass
     
 
 
@@ -131,6 +132,21 @@ class listSpecies(response):
         names += "</div>"
         self.contents = insert_content(self.contents,["title","content"],["List of species available in the database:",names])
         return self.contents, self.style
+    
+    def json(self):
+        super().json()
+        if self.params["spec_lim"] != "":
+            n = int(self.params["spec_lim"])
+        else:
+            n = -1 #starting at -1 n will never be 0
+        names = []
+        for e in self.ens_data["species"]:
+            names += f"{e[self.params["name_selection"]]}"
+            n += -1
+            if n == 0:
+                break
+        self.contents = str(names)
+        return self.contents, self.style
 
 
 
@@ -155,7 +171,18 @@ class karyotype(response):
         else:
             self.contents = insert_content(self.contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
         return self.contents, self.style
-
+    
+    def json(self):
+        super().json()
+        if type(self.ens_data) != tuple:
+            names = []
+            for e in self.ens_data["karyotype"]:
+                names += f"{e}"
+            self.contents = str(names)
+            #print(contents)
+        else:
+            self.contents = self.contents = str(["unavailable_species"])
+        return self.contents, self.style
 
 
 class chromosomeLenght(response):
@@ -181,7 +208,21 @@ class chromosomeLenght(response):
         else:
             self.contents = insert_content(self.contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
         return self.contents, self.style
-
+    
+    def json(self):
+        super().json()
+        
+        if type(self.ens_data) != tuple:
+            for e in self.ens_data["top_level_region"]:
+                if e["name"] == self.params["chromosome"]:
+                    #print(e)
+                    self.contents = str([e["length"]]) #this makes a list with only one element, and turns it into a string to return it as json
+                    break
+            else:
+                self.contents = str(["unavailable_chromosome"])
+        else:
+            self.contents = str(["unavailable_species"])
+        return self.contents, self.style
 
 
 class geneLookup(response):
@@ -194,6 +235,7 @@ class geneLookup(response):
     
     def html(self, template = "/page_template.html"):
         #super().html(template)   #I won't use super because geneLookup in particular only requests the id of the gene, which I implement with the get_id() function
+        self.style = "text/html"
         file = open(self.PATH + template)
         self.contents = file.read()
         file.close()
@@ -211,6 +253,18 @@ class geneLookup(response):
             #gene_id = ens_data["id"]
             self.contents = insert_content(self.contents,["title","content"],["Search result",f"The gene {self.params["gene"]} of homo_sapiens has the identifier {self.id} "])
         
+        return self.contents, self.style
+    
+    def json(self):
+        #super().json()
+        self.style = "application/json"
+        try:
+            self.id
+        except:
+            self.get_id()
+        
+        if self.id == "":
+            self.contents = str(["unavailable_gene"])
         return self.contents, self.style
 
 
@@ -233,11 +287,16 @@ class geneSeq(response):
         <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>
         """
         for e in self.ens_data["seq"]:
-            body_text += e + "<wbr>"
+            body_text += e + "<wbr>" #This makes html treat each base as a separate word, allowing it to roll over to different lines automatically inside the text box
         body_text += "</div>"
         self.contents = insert_content(self.contents,["title","content"],["Gene requested:",body_text])
         
-        return self.contents, self.style    
+        return self.contents, self.style
+
+    def json(self):
+        super().json()
+        self.contents = str([self.ens_data["seq"]])
+        return self.contents, self.style
 
 
 class geneInfo(response):
@@ -283,7 +342,16 @@ class geneInfo(response):
         self.contents = insert_content(self.contents,["title","content"],["Info from the gene requested",body_text])
         
         return self.contents, self.style
+    
+    def json(self):
+        super().json()
+        try:
+            self.table
+        except AttributeError:
+            self.create_info_table()
 
+        self.contents = str(self.table)
+        return self.contents, self.style
 
 class geneCalc(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
@@ -298,9 +366,8 @@ class geneCalc(response):
     def __str__(self):
         return f"Response for geneCalc, stored parameters:{str(self.params)}"
     
-    def count(self):
+    def count(seq): #This function doesn't have self because it doesn't need to access any other variable or function from the class
         bases = {"A":0,"C":0,"T":0,"G":0}
-        seq = self.ens_data["seq"]
         try:
             for l in seq:
                 bases[l] += 1
@@ -310,7 +377,7 @@ class geneCalc(response):
     
     def html(self, template = "/page_template.html"):
         super().html(template)
-        n = self.count()
+        n = self.count(self.ens_data["seq"])
         body_text = f"""·Lenght: {len(self.ens_data["seq"])}
 ·A: {n["A"]}
 ·C: {n["C"]}
@@ -319,3 +386,11 @@ class geneCalc(response):
         self.contents = insert_content(self.contents,["title","content"],["Calculation result:",body_text])
         
         return self.contents, self.style
+    
+    def json(self):
+        super().json()
+        count = self.count(self.ens_data["seq"])
+        count.update({"len":len(self.ens_data["seq"])})
+        self.contents = str(count)
+        return self.contents, self.style
+    
