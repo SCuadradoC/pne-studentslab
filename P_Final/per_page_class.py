@@ -33,7 +33,7 @@ class response:
         return f"Raw response, stored parameters:{str(self.params)}"
     
     def check_data(self):
-        return [self.params, self.PATH, self.LNK, self.conn, self.source, self.contents]
+        return [self.params, self.PATH, self.LNK, self.conn, self.source, self.contents, self.style]
     
     def load(self):     #Gets the info from the database
         self.conn.request("GET", self.source)
@@ -105,6 +105,8 @@ class response:
             self.load()
         pass
     
+    def response_code(self):
+        return 200
 
 
 
@@ -141,11 +143,12 @@ class listSpecies(response):
             n = -1 #starting at -1 n will never be 0
         names = []
         for e in self.ens_data["species"]:
-            names += f"{e[self.params["name_selection"]]}"
+            names.append(e[self.params["name_selection"]])
             n += -1
             if n == 0:
                 break
-        self.contents = str(names)
+        self.contents = json.encoder.JSONEncoder().encode(names) ### To send a json
+        #print(self.contents)
         return self.contents, self.style
 
 
@@ -175,13 +178,10 @@ class karyotype(response):
     def json(self):
         super().json()
         if type(self.ens_data) != tuple:
-            names = []
-            for e in self.ens_data["karyotype"]:
-                names += f"{e}"
-            self.contents = str(names)
+            self.contents = json.encoder.JSONEncoder().encode(self.ens_data["karyotype"])
             #print(contents)
         else:
-            self.contents = self.contents = str(["unavailable_species"])
+            self.contents = json.encoder.JSONEncoder().encode(["unavailable_species"])
         return self.contents, self.style
 
 
@@ -216,12 +216,12 @@ class chromosomeLenght(response):
             for e in self.ens_data["top_level_region"]:
                 if e["name"] == self.params["chromosome"]:
                     #print(e)
-                    self.contents = str([e["length"]]) #this makes a list with only one element, and turns it into a string to return it as json
+                    self.contents = json.encoder.JSONEncoder().encode({"len":e["length"]})
                     break
             else:
-                self.contents = str(["unavailable_chromosome"])
+                self.contents = json.encoder.JSONEncoder().encode(["unavailable_chromosome"])
         else:
-            self.contents = str(["unavailable_species"])
+            self.contents = json.encoder.JSONEncoder().encode(["unavailable_species"])
         return self.contents, self.style
 
 
@@ -264,7 +264,7 @@ class geneLookup(response):
             self.get_id()
         
         if self.id == "":
-            self.contents = str(["unavailable_gene"])
+            self.contents = json.encoder.JSONEncoder().encode(["unavailable_gene"])
         return self.contents, self.style
 
 
@@ -295,7 +295,7 @@ class geneSeq(response):
 
     def json(self):
         super().json()
-        self.contents = str([self.ens_data["seq"]])
+        self.contents = json.encoder.JSONEncoder().encode([self.ens_data["seq"]])
         return self.contents, self.style
 
 
@@ -350,7 +350,7 @@ class geneInfo(response):
         except AttributeError:
             self.create_info_table()
 
-        self.contents = str(self.table)
+        self.contents = json.encoder.JSONEncoder().encode(self.table)
         return self.contents, self.style
 
 class geneCalc(response):
@@ -391,6 +391,25 @@ class geneCalc(response):
         super().json()
         count = self.count(self.ens_data["seq"])
         count.update({"len":len(self.ens_data["seq"])})
-        self.contents = str(count)
+        self.contents = json.encoder.JSONEncoder().encode(count)
         return self.contents, self.style
     
+class error(response):
+    def __init__(self, path, IP="127.0.0.1", PORT=8080):
+        #super().__init__(params, path, server, IP, PORT)
+        self.LNK = f"http://{IP}:{PORT}"
+        self.PATH = path
+    
+    def html(self):
+        page = open(self.PATH + "/error.html")
+        self.contents = page.read()
+        page.close()
+        self.style = "text/html"
+        return self.contents, self.style
+    
+    def json(self):
+        super().json()
+        self.contents = json.encoder.JSONEncoder().encode({"error":"resource_not_available"})
+    
+    def response_code(self):
+        return 404

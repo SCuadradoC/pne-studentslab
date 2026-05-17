@@ -45,31 +45,33 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
 #            elif dir_path == "/favicon.ico":
 #                page = open(PATH + "/logo.png", "rb")
 #                contents = page.read()
-#                style = "image/png"
-            elif dir_path == PAGES[0]:
-                req = ppc.listSpecies(params,PATH)
-            elif dir_path == PAGES[1]:
-                req = ppc.karyotype(params,PATH)
-            elif dir_path == PAGES[2]:
-                req = ppc.chromosomeLenght(params,PATH)
-            elif dir_path == PAGES[3]:
-                req = ppc.geneLookup(params,PATH)
-            elif dir_path == PAGES[4]:
-                req = ppc.geneSeq(params,PATH)
-            elif dir_path == PAGES[5]:
-                req = ppc.geneInfo(params,PATH)
+#                style = "image/png" 
+                response_code = 200
             else:
-                raise FileNotFoundError
-            
-            try:
-                if params["json"] == "1":
-                    contents, style  = req.json()
+                if dir_path == PAGES[0]:
+                    req = ppc.listSpecies(params,PATH)
+                elif dir_path == PAGES[1]:
+                    req = ppc.karyotype(params,PATH)
+                elif dir_path == PAGES[2]:
+                    req = ppc.chromosomeLenght(params,PATH)
+                elif dir_path == PAGES[3]:
+                    req = ppc.geneLookup(params,PATH)
+                elif dir_path == PAGES[4]:
+                    req = ppc.geneSeq(params,PATH)
+                elif dir_path == PAGES[5]:
+                    req = ppc.geneInfo(params,PATH)
                 else:
+                    req = ppc.error(PATH)
+                
+                try:
+                    if params["json"] == "1":
+                        contents, style  = req.json()
+                    else:
+                        contents, style  = req.html()
+                except KeyError:
                     contents, style  = req.html()
-            except KeyError:
-                contents, style  = req.html()
+                response_code = req.response_code()
 
-            response_code = 200
         except FileNotFoundError:
             page = open(PATH + "/error.html")
             contents = page.read()
@@ -78,25 +80,30 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             response_code = 404
         
         contents = contents.replace("[[lnk]]", LNK)
-        self.send_response(response_code)
-        
-        termcolor.cprint(self.requestline, 'green')
-        #print(contents)
-        
-        self.send_header('Content-Type', style)
-        
-        if style == "text/html":
-            # Define the content-type header:
-            self.send_header('Content-Length', len(contents.encode()))
 
-            # The header is finished
+        self.send_response(response_code)
+        self.send_header('Content-Type', style)
+
+        #termcolor.cprint(self.requestline, 'green')
+        print(contents)
+        if style == "text/html":
+            self.send_header('Content-Length', len(contents.encode()))
             self.end_headers()
 
             # Send the response message
             self.wfile.write(contents.encode())
+
+        elif style == "application/json":
+            self.send_header('Content-Length', len(str.encode(contents)))
+            self.end_headers()
+
+            # Send the response message
+            self.wfile.write(str.encode(contents))
+
         elif style == "image/png":
             self.end_headers()
             self.wfile.write(contents)
+        
             
             
 
