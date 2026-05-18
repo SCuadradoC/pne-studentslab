@@ -41,7 +41,6 @@
           Select gene: &nbsp <input type="text" name="gene"/><br>
           <input type="submit" value="Request"/>   
         </form>
-        <br>
         <h3> Gene sequence </h3>
         <form action="geneSeq" method="get">
           <!--input type="hidden" name="chromosome_len"-->
@@ -56,13 +55,27 @@
           Select gene: &nbsp <input type="text" name="gene"/><br>
           <input type="submit" value="Request"/>   
         </form>
-        <h3> Gene Information </h3>
-        <form action="geneInfo" method="get">
+        <h3> Gene Calculations </h3>
+        <form action="geneCalc" method="get">
           <!--input type="hidden" name="chromosome_len"-->
           <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
           Select gene: &nbsp <input type="text" name="gene"/><br>
           <input type="submit" value="Request"/>   
         </form>
-        
+        <h3> Gene Overlap </h3>
+        <form action="geneList" method="get">
+          <!--input type="hidden" name="chromosome_len"-->
+          <!--Enter species:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="text" name="species value="human" "/><br>-->
+          Region: &nbsp &nbsp &nbsp &nbsp <input type="number" name="region"/><br>
+          Beginning: &nbsp <input type="number" name="start"/><br>
+          End:&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp <input type="number" name="end"/><br>
+
+          Select name type: <select name="name_selection">
+            <option value="id"> Ensembl ID </option>
+            <option value="external_name"> External name </option>
+            <option value="logic_name"> Logic name </option>
+          </select><br>
+          <input type="submit" value="Request"/>   
+        </form>
       </body>
     </html>

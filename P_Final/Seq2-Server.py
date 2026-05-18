@@ -60,6 +60,10 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
                     req = ppc.geneSeq(params,PATH)
                 elif dir_path == PAGES[5]:
                     req = ppc.geneInfo(params,PATH)
+                elif dir_path == PAGES[6]:
+                    req = ppc.geneCalc(params,PATH)
+                elif dir_path == PAGES[7]:
+                    req = ppc.geneList(params,PATH)
                 else:
                     req = ppc.error(PATH)
                 

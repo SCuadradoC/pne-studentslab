@@ -35,7 +35,7 @@ class response:
     def check_data(self):
         return [self.params, self.PATH, self.LNK, self.conn, self.source, self.contents, self.style]
     
-    def load(self):     #Gets the info from the database
+    def load(self, ignore_list:bool = False):     #Gets the info from the database
         self.conn.request("GET", self.source)
         ens_data_raw = self.conn.getresponse().read().decode("utf-8")
         try:
@@ -44,7 +44,10 @@ class response:
             ens_data = ens_data_raw
         
         if type(ens_data) == list:
-            ens_data = ens_data[0]
+            if ignore_list:
+                ens_data = ens_data[0]
+            else:
+                pass
         elif type(ens_data) == dict: #This allows me to detect when an attempt to access any info from the ensembl database returns an error or an empty json, either by checking if the first value is "error" or by checking if it's a tuple
             if len(ens_data) == 0:
                 ens_data = ("error", "return_empty")
@@ -265,6 +268,8 @@ class geneLookup(response):
         
         if self.id == "":
             self.contents = json.encoder.JSONEncoder().encode(["unavailable_gene"])
+        else:
+            self.contents = json.encoder.JSONEncoder().encode([self.id])
         return self.contents, self.style
 
 
@@ -295,7 +300,7 @@ class geneSeq(response):
 
     def json(self):
         super().json()
-        self.contents = json.encoder.JSONEncoder().encode([self.ens_data["seq"]])
+        self.contents = json.encoder.JSONEncoder().encode({"seq":self.ens_data["seq"]})
         return self.contents, self.style
 
 
@@ -366,7 +371,7 @@ class geneCalc(response):
     def __str__(self):
         return f"Response for geneCalc, stored parameters:{str(self.params)}"
     
-    def count(seq): #This function doesn't have self because it doesn't need to access any other variable or function from the class
+    def count(self, seq):
         bases = {"A":0,"C":0,"T":0,"G":0}
         try:
             for l in seq:
@@ -378,11 +383,11 @@ class geneCalc(response):
     def html(self, template = "/page_template.html"):
         super().html(template)
         n = self.count(self.ens_data["seq"])
-        body_text = f"""·Lenght: {len(self.ens_data["seq"])}
-·A: {n["A"]}
-·C: {n["C"]}
-·T: {n["T"]}
-·G: {n["G"]}"""
+        body_text = f"""·Lenght: {len(self.ens_data["seq"])} <br>
+·A: {n["A"]}<br>
+·C: {n["C"]}<br>
+·T: {n["T"]}<br>
+·G: {n["G"]}<br>"""
         self.contents = insert_content(self.contents,["title","content"],["Calculation result:",body_text])
         
         return self.contents, self.style
@@ -393,6 +398,61 @@ class geneCalc(response):
         count.update({"len":len(self.ens_data["seq"])})
         self.contents = json.encoder.JSONEncoder().encode(count)
         return self.contents, self.style
+
+
+
+class geneList(response):
+    def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
+        super().__init__(params, path, server, IP, PORT)
+        self.source = f"/overlap/region/human/{params["region"]}:{params["start"]}-{params["end"]}?feature=gene;feature=transcript;feature=cds;feature=exon;content-type=application/json"
+    
+    def __str__(self):
+        return f"Response for geneList, stored parameters:{str(self.params)}"
+
+    def get_names(self):
+        names = {}
+        for e in self.ens_data:
+            try:
+                names.update({e[self.params["name_selection"]]:"selected"})
+            except KeyError: 
+                names.update({e["id"]:"fallback"}) #because unless the id is chocen from the start, not all genes have all possible names
+        return names
+
+    def html(self, template = "/page_template.html"):
+        #super().html(template) #I need load to use ignore_list = False
+        self.style = "text/html"
+        file = open(self.PATH + template)
+        self.contents = file.read()
+        file.close()
+        try:
+            self.ens_data
+        except AttributeError:
+            self.load(False)
+
+        
+        names = self.get_names()
+        body_text = f"""<div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>
+        """
+        for e in names:
+            body_text += f"· {e} ({names[e]})<br> \n"
+        body_text += "</div>"
+
+        self.contents = insert_content(self.contents,["title","content"],["Genes overlapping the requested region",body_text])
+        return self.contents, self.style
+    
+    def json(self):
+        #super().json()
+        self.style = "application/json"
+        try:
+            self.ens_data
+        except AttributeError:
+            self.load(False)
+        names = self.get_names()
+        self.contents = json.encoder.JSONEncoder().encode(names)
+        return self.contents, self.style
+
+            
+
     
 class error(response):
     def __init__(self, path, IP="127.0.0.1", PORT=8080):
