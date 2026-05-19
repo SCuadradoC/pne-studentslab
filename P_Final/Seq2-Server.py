@@ -42,10 +42,12 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             if dir_path == "/" or dir_path == "/index.html":
                 contents = load_txt(PATH + "/index.html")
                 style = "text/html"
-#            elif dir_path == "/favicon.ico":
-#                page = open(PATH + "/logo.png", "rb")
-#                contents = page.read()
-#                style = "image/png" 
+                response_code = 200
+            elif dir_path == "/favicon.ico":
+                page = open(PATH + "/logo.png", "rb") # I need to load an image using "rb" (raw bytes) to be able to send it using the python server
+                contents = page.read()
+                page.close()
+                style = "image/png" 
                 response_code = 200
             else:
                 if dir_path == PAGES[0]:
@@ -82,8 +84,9 @@ class TestHandler(http.server.BaseHTTPRequestHandler):
             page.close()
             style = "text/html"
             response_code = 404
-        
-        contents = contents.replace("[[lnk]]", LNK)
+
+        if style == "text/html":
+            contents = insert_content(contents,["title","lnk"], [dir_path[1:], LNK])
 
         self.send_response(response_code)
         self.send_header('Content-Type', style)

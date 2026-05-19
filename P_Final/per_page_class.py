@@ -77,7 +77,7 @@ class response:
         return check
     
     def get_id(self, return_id:bool = False):
-        self.conn.request("GET", f"/xrefs/symbol/homo_sapiens/{self.params["gene"]}?content-type=application/json") #maybe add support for other species later (?)
+        self.conn.request("GET", f"/xrefs/symbol/{self.params["species"]}/{self.params["gene"]}?content-type=application/json") #maybe add support for other species later (?)
         id_raw = self.conn.getresponse().read().decode("utf-8")
         id = json.loads(id_raw)
         if len(id) != 0:
@@ -88,7 +88,15 @@ class response:
 
         if return_id:
             return self.id
-    
+        
+    def check_species(self):
+        try:
+            species = self.params["species"]
+        except KeyError:
+            species = ""
+        if species == "":
+            self.params.update({"species":"homo_sapiens"})
+
     def html(self, template:str = "/page_template.html"):
         self.style = "text/html"
         file = open(self.PATH + template)
@@ -128,14 +136,14 @@ class listSpecies(response):
             n = int(self.params["spec_lim"])
         else:
             n = -1 #starting at -1 n will never be 0
-        names = "        <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>\n"
+        names = "        <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #bbb; padding: 10px; background-color: #eee;'>\n"
         for e in self.ens_data["species"]:
             names += f"·{e[self.params["name_selection"]]}<br>\n"
             n += -1
             if n == 0:
                 break
         names += "</div>"
-        self.contents = insert_content(self.contents,["title","content"],["List of species available in the database:",names])
+        self.contents = insert_content(self.contents,["heading","content"],["List of species available in the database:",names])
         return self.contents, self.style
     
     def json(self):
@@ -159,7 +167,7 @@ class listSpecies(response):
 class karyotype(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
         super().__init__(params, path, server, IP, PORT)
-        self.source = f"/info/assembly/{params["species"]}?content-type=application/json"
+        self.source = f"/info/assembly/{params["species"].replace("+","%20")}?content-type=application/json" #Added these replace because the ensembl database uses %20 to represent spaces instead of +, which is what is returned when we enter a space in a html form
 
     def __str__(self):
         return f"Response for karyotype, stored parameters:{str(self.params)}"
@@ -168,14 +176,14 @@ class karyotype(response):
         super().html(template)
     
         if type(self.ens_data) != tuple:
-            names = "        <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>\n"
+            names = "        <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #bbb; padding: 10px; background-color: #eee;'>\n"
             for e in self.ens_data["karyotype"]:
                 names += f"· {e}<br>"
             names += "</div>"
-            self.contents = insert_content(self.contents,["title","content"],[f"Chromosomes in the {self.params["species"]} karyotype:",names])
+            self.contents = insert_content(self.contents,["heading","content"],[f"Chromosomes in the {self.params["species"].replace("+"," ")} karyotype:",names])
             #print(contents)
         else:
-            self.contents = insert_content(self.contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
+            self.contents = insert_content(self.contents,["heading","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
         return self.contents, self.style
     
     def json(self):
@@ -204,12 +212,12 @@ class chromosomeLenght(response):
                 if e["name"] == self.params["chromosome"]:
                     #print(e)
                     chrom_lenght = e["length"]
-                    self.contents = insert_content(self.contents,["title","content"],["Chromosome lenght info",f"Lenght of chromosome {self.params['chromosome']} of the {self.params["species"]} species is {str(chrom_lenght)} bases"])
+                    self.contents = insert_content(self.contents,["heading","content"],["Chromosome lenght info",f"Lenght of chromosome {self.params['chromosome']} of the {self.params["species"]} species is {str(chrom_lenght)} bases"])
                     break
             else:
-                self.contents = insert_content(self.contents,["title","content"],["Chromosome lenght info",f"The chromosome {self.params['chromosome']} doesn't exist in the {self.params["species"]} species"])
+                self.contents = insert_content(self.contents,["heading","content"],["Chromosome lenght info",f"The chromosome {self.params['chromosome']} doesn't exist in the {self.params["species"]} species"])
         else:
-            self.contents = insert_content(self.contents,["title","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
+            self.contents = insert_content(self.contents,["heading","content"],["Invalid species","The species you requested couldn't be found on the ensembl database "])
         return self.contents, self.style
     
     def json(self):
@@ -231,7 +239,8 @@ class chromosomeLenght(response):
 class geneLookup(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
         super().__init__(params, path, server, IP, PORT)
-        self.source = f"/xrefs/symbol/homo_sapiens/{params["gene"]}?content-type=application/json" #maybe add support for other species later (?)
+        self.check_species()
+        self.source = f"/xrefs/symbol/{self.params["species"]}/{params["gene"]}?content-type=application/json" #maybe add support for other species later (?)
 
     def __str__(self):
         return f"Response for geneLookup, stored parameters:{str(self.params)}"
@@ -249,12 +258,12 @@ class geneLookup(response):
             self.get_id()
             
         if self.id == "":
-            self.contents = insert_content(self.contents,["title","content"],["Search result",f"""The gene "{self.params["gene"]}" couldn't be found on the homo_sapiens genome """])
+            self.contents = insert_content(self.contents,["heading","content"],["Search result",f"""The gene "{self.params["gene"]}" couldn't be found on the {self.params["species"]} genome """])
         #elif ens_data.get("error") != None:
         #    contents = insert_content(contents,["title","content"],["Search result",f"""The species {...} couldn't be found on the ensembl database """])
         else:
             #gene_id = ens_data["id"]
-            self.contents = insert_content(self.contents,["title","content"],["Search result",f"The gene {self.params["gene"]} of homo_sapiens has the identifier {self.id} "])
+            self.contents = insert_content(self.contents,["heading","content"],["Search result",f"The gene {self.params["gene"]} of {self.params["species"]} has the identifier {self.id} "])
         
         return self.contents, self.style
     
@@ -276,6 +285,7 @@ class geneLookup(response):
 class geneSeq(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
         super().__init__(params, path, server, IP, PORT)
+        self.check_species()
         
         if self.is_id():
             self.id = params["gene"]
@@ -289,12 +299,12 @@ class geneSeq(response):
     def html(self, template = "/page_template.html"):
         super().html(template)
         body_text = f"""{self.id}<br>
-        <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>
+        <div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #bbb; padding: 10px; background-color: #eee;'>
         """
         for e in self.ens_data["seq"]:
             body_text += e + "<wbr>" #This makes html treat each base as a separate word, allowing it to roll over to different lines automatically inside the text box
         body_text += "</div>"
-        self.contents = insert_content(self.contents,["title","content"],["Gene requested:",body_text])
+        self.contents = insert_content(self.contents,["heading","content"],["Gene requested:",body_text])
         
         return self.contents, self.style
 
@@ -307,6 +317,7 @@ class geneSeq(response):
 class geneInfo(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
         super().__init__(params, path, server, IP, PORT)
+        self.check_species()
 
         if self.is_id():
             self.id = params["gene"]
@@ -319,7 +330,7 @@ class geneInfo(response):
     
     def create_info_table(self):
         coordinates = self.ens_data["desc"].split(":")
-        print(self.ens_data)
+        #print(self.ens_data)
         self.table = {
             "molecule":self.ens_data["molecule"],
             "location":f"{coordinates[0]} {coordinates[2]}",
@@ -344,7 +355,7 @@ class geneInfo(response):
 <p>Strand orientation: {self.table["strand_orientation"]}</p>
 <p>Genome reference version: {self.table["reference_version"]}</p>
 """
-        self.contents = insert_content(self.contents,["title","content"],["Info from the gene requested",body_text])
+        self.contents = insert_content(self.contents,["heading","content"],["Info from the gene requested",body_text])
         
         return self.contents, self.style
     
@@ -361,6 +372,7 @@ class geneInfo(response):
 class geneCalc(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
         super().__init__(params, path, server, IP, PORT)
+        self.check_species()
         
         if self.is_id():
             self.id = params["gene"]
@@ -388,7 +400,7 @@ class geneCalc(response):
 ·C: {n["C"]}<br>
 ·T: {n["T"]}<br>
 ·G: {n["G"]}<br>"""
-        self.contents = insert_content(self.contents,["title","content"],["Calculation result:",body_text])
+        self.contents = insert_content(self.contents,["heading","content"],["Calculation result:",body_text])
         
         return self.contents, self.style
     
@@ -404,7 +416,8 @@ class geneCalc(response):
 class geneList(response):
     def __init__(self, params, path, server = "rest.ensembl.org", IP="127.0.0.1", PORT=8080):
         super().__init__(params, path, server, IP, PORT)
-        self.source = f"/overlap/region/human/{params["region"]}:{params["start"]}-{params["end"]}?feature=gene;feature=transcript;feature=cds;feature=exon;content-type=application/json"
+        self.check_species()
+        self.source = f"/overlap/region/{self.params["species"]}/{params["region"]}:{params["start"]}-{params["end"]}?feature=gene;feature=transcript;feature=cds;feature=exon;content-type=application/json"
     
     def __str__(self):
         return f"Response for geneList, stored parameters:{str(self.params)}"
@@ -431,13 +444,13 @@ class geneList(response):
 
         
         names = self.get_names()
-        body_text = f"""<div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>
+        body_text = f"""<div style='width: 1000px; height: 300px; overflow: auto; border: 1px solid #bbb; padding: 10px; background-color: #eee;'>
         """
         for e in names:
             body_text += f"· {e} ({names[e]})<br> \n"
         body_text += "</div>"
 
-        self.contents = insert_content(self.contents,["title","content"],["Genes overlapping the requested region",body_text])
+        self.contents = insert_content(self.contents,["heading","content"],["Genes overlapping the requested region",body_text])
         return self.contents, self.style
     
     def json(self):
