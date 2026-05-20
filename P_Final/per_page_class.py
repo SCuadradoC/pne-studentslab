@@ -80,11 +80,14 @@ class response:
         self.conn.request("GET", f"/xrefs/symbol/{self.params["species"]}/{self.params["gene"]}?content-type=application/json") #maybe add support for other species later (?)
         id_raw = self.conn.getresponse().read().decode("utf-8")
         id = json.loads(id_raw)
-        if len(id) != 0:
+        if len(id) == 0:
+            self.id = ""
+        elif type(id) == dict and id.get("error") != None:
+            self.id = ""
+        else:
             #print(id)
             self.id = id[0]["id"]
-        else:
-            self.id = ""
+            
 
         if return_id:
             return self.id
@@ -343,6 +346,8 @@ class geneInfo(response):
     
     def html(self, template = "/page_template.html"):
         super().html(template)
+        if self.id == "":
+            raise FileNotFoundError
         try:
             self.table
         except AttributeError:
